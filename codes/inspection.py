@@ -16,7 +16,7 @@ def infer(x, enc, K, S):
     enc = enc.eval()
     with torch.no_grad():
         for xs, ns, iis, js in loader:
-            xs = xs.cuda()
+            xs = xs.to("mps")
             embedding = enc(xs)
             embedding = embedding.detach().cpu().numpy()
 

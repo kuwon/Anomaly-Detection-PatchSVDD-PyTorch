@@ -10,7 +10,7 @@ def do_evaluate_encoder_multiK(obj):
     from codes.inspection import eval_encoder_NN_multiK
     from codes.networks import EncoderHier
 
-    enc = EncoderHier(K=64, D=64).cuda()
+    enc = EncoderHier(K=64, D=64).to("mps")
     enc.load(obj)
     enc.eval()
     results = eval_encoder_NN_multiK(enc, obj)

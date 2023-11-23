@@ -26,9 +26,9 @@ def train():
     lr = args.lr
         
     with task('Networks'):
-        enc = EncoderHier(64, D).cuda()
-        cls_64 = PositionClassifier(64, D).cuda()
-        cls_32 = PositionClassifier(32, D).cuda()
+        enc = EncoderHier(64, D).to("mps")
+        cls_64 = PositionClassifier(64, D).to("mps")
+        cls_32 = PositionClassifier(32, D).to("mps")
 
         modules = [enc, cls_64, cls_32]
         params = [list(module.parameters()) for module in modules]
@@ -49,7 +49,7 @@ def train():
         datasets[f'svdd_32'] = SVDD_Dataset(train_x, K=32, repeat=rep)
 
         dataset = DictionaryConcatDataset(datasets)
-        loader = DataLoader(dataset, batch_size=64, shuffle=True, num_workers=2, pin_memory=True)
+        loader = DataLoader(dataset, batch_size=64, shuffle=True, num_workers=0, pin_memory=True)
 
     print('Start training')
     for i_epoch in range(args.epochs):
@@ -58,7 +58,7 @@ def train():
                 module.train()
 
             for d in loader:
-                d = to_device(d, 'cuda', non_blocking=True)
+                d = to_device(d, 'mps', non_blocking=True)
                 opt.zero_grad()
 
                 loss_pos_64 = PositionClassifier.infer(cls_64, enc, d['pos_64'])
