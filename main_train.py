@@ -42,9 +42,12 @@ def train():
 
         rep = 100
         datasets = dict()
-        datasets[f'pos_64'] = PositionDataset(train_x, K=64, repeat=rep)
-        datasets[f'pos_32'] = PositionDataset(train_x, K=32, repeat=rep)
-        
+        datasets[f'upper_pos_64'] = PositionDataset(train_x, K=64, repeat=rep, coords_bound=(4,8))
+        datasets[f'upper_pos_32'] = PositionDataset(train_x, K=32, repeat=rep, coords_bound=(4,8))
+
+        datasets[f'lower_pos_64'] = PositionDataset(train_x, K=64, repeat=rep, coords_bound=(0,4))
+        datasets[f'lower_pos_32'] = PositionDataset(train_x, K=32, repeat=rep, coords_bound=(0,4))
+
         datasets[f'svdd_64'] = SVDD_Dataset(train_x, K=64, repeat=rep)
         datasets[f'svdd_32'] = SVDD_Dataset(train_x, K=32, repeat=rep)
 
@@ -61,12 +64,15 @@ def train():
                 d = to_device(d, 'mps', non_blocking=True)
                 opt.zero_grad()
 
-                loss_pos_64 = PositionClassifier.infer(cls_64, enc, d['pos_64'])
-                loss_pos_32 = PositionClassifier.infer(cls_32, enc.enc, d['pos_32'])
+                loss_upper_pos_64 = PositionClassifier.infer(cls_64, enc, d['upper_pos_64'])
+                loss_upper_pos_32 = PositionClassifier.infer(cls_32, enc.enc, d['upper_pos_32'])
+                loss_lower_pos_64 = PositionClassifier.infer(cls_64, enc, d['lower_pos_64'])
+                loss_lower_pos_32 = PositionClassifier.infer(cls_32, enc.enc, d['lower_pos_32'])
+
                 loss_svdd_64 = SVDD_Dataset.infer(enc, d['svdd_64'])
                 loss_svdd_32 = SVDD_Dataset.infer(enc.enc, d['svdd_32'])
 
-                loss = loss_pos_64 + loss_pos_32 + args.lambda_value * (loss_svdd_64 + loss_svdd_32)
+                loss = loss_upper_pos_64 + loss_upper_pos_32 + loss_lower_pos_64 + loss_lower_pos_32 + args.lambda_value * (loss_svdd_64 + loss_svdd_32)
 
                 loss.backward()
                 opt.step()

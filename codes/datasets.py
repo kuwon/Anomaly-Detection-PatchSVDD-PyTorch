@@ -12,12 +12,12 @@ def generate_coords(H, W, K):
     return h, w
 
 
-def generate_coords_position(H, W, K):
+def generate_coords_position(H, W, K, coords_bound=(0,8)):
     with task('P1'):
         p1 = generate_coords(H, W, K)
         h1, w1 = p1
 
-    pos = np.random.randint(8)
+    pos = np.random.randint(coords_bound[0],coords_bound[1])
 
     with task('P2'):
         J = K // 4
@@ -115,11 +115,12 @@ class SVDD_Dataset(Dataset):
 
 
 class PositionDataset(Dataset):
-    def __init__(self, x, K=64, repeat=1):
+    def __init__(self, x, K=64, repeat=1, coords_bound=(0,8)):
         super(PositionDataset, self).__init__()
         self.x = np.asarray(x)
         self.K = K
         self.repeat = repeat
+        self.coords_bound = coords_bound
 
     def __len__(self):
         N = self.x.shape[0]
@@ -131,7 +132,7 @@ class PositionDataset(Dataset):
         n = idx % N
 
         image = self.x[n]
-        p1, p2, pos = generate_coords_position(256, 256, K)
+        p1, p2, pos = generate_coords_position(256, 256, K, self.coords_bound)
 
         patch1 = crop_image_CHW(image, p1, K).copy()
         patch2 = crop_image_CHW(image, p2, K).copy()

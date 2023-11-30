@@ -246,13 +246,14 @@ class PositionClassifier(nn.Module):
         h2 = enc(x2s)
 
         logits = c(h1, h2)
+
         loss = xent(logits, ys)
         return loss
 
     def forward(self, h1, h2):
         h1 = h1.view(-1, self.D)
         h2 = h2.view(-1, self.D)
-
+        
         h = h1 - h2
 
         h = self.fc1(h)
